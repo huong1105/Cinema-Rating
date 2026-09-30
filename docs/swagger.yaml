@@ -1,0 +1,167 @@
+openapi: 3.0.3
+info:
+  title: CineRate API - Phase 1 Baseline
+  description: |
+    REST API backend cho dịch vụ đánh giá phim CineRate (Phase 1).
+    Phục vụ làm sản phẩm cơ sở cho bài toán môn Kiến trúc Phần mềm (KTPM).
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3000
+    description: Local development
+
+tags:
+  - name: Auth
+    description: Đăng ký, Đăng nhập & Profile
+  - name: Movies
+    description: Xem danh sách, chi tiết, thêm & xóa phim
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Movie:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        overview:
+          type: string
+        director:
+          type: string
+        releaseYear:
+          type: integer
+        genres:
+          type: array
+          items:
+            type: string
+
+paths:
+  /health:
+    get:
+      summary: Kiểm tra trạng thái server
+      responses:
+        '200':
+          description: OK
+
+  /api/auth/register:
+    post:
+      tags: [Auth]
+      summary: Đăng ký tài khoản mới
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, username, password]
+              properties:
+                email:
+                  type: string
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '201':
+          description: Đăng ký thành công
+
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Đăng nhập cấp JWT Token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Đăng nhập thành công
+
+  /api/auth/profile:
+    get:
+      tags: [Auth]
+      summary: Xem thông tin cá nhân (Cần Auth)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Thông tin user
+
+  /api/movies:
+    get:
+      tags: [Movies]
+      summary: Lấy danh sách phim
+      responses:
+        '200':
+          description: Danh sách phim kèm thể loại
+    post:
+      tags: [Movies]
+      summary: Thêm phim mới (Cần Auth)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              properties:
+                title:
+                  type: string
+                overview:
+                  type: string
+                director:
+                  type: string
+                releaseYear:
+                  type: integer
+                genreIds:
+                  type: array
+                  items:
+                    type: integer
+      responses:
+        '201':
+          description: Tạo phim thành công
+
+  /api/movies/{id}:
+    get:
+      tags: [Movies]
+      summary: Xem chi tiết phim
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Chi tiết phim
+    delete:
+      tags: [Movies]
+      summary: Xóa phim (Cần Auth)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Xóa phim thành công

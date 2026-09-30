@@ -1,0 +1,108 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// 1. User
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  username     String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  reviews    Review[]
+  ratings    Rating[]
+  watchlists Watchlist[]
+
+  @@map("users")
+}
+
+// 2. Movie
+model Movie {
+  id          Int      @id @default(autoincrement())
+  title       String
+  overview    String?
+  director    String?
+  releaseYear Int?
+  createdAt   DateTime @default(now())
+
+  genres     MovieGenre[]
+  reviews    Review[]
+  ratings    Rating[]
+  watchlists Watchlist[]
+
+  @@map("movies")
+}
+
+// 3. Genre
+model Genre {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  movies MovieGenre[]
+
+  @@map("genres")
+}
+
+// 4. MovieGenre
+model MovieGenre {
+  id      Int @id @default(autoincrement())
+  movieId Int
+  genreId Int
+
+  movie Movie @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  genre Genre @relation(fields: [genreId], references: [id], onDelete: Cascade)
+
+  @@unique([movieId, genreId])
+  @@map("movie_genres")
+}
+
+// 5. Review
+model Review {
+  id        Int      @id @default(autoincrement())
+  content   String
+  createdAt DateTime @default(now())
+
+  userId  Int
+  movieId Int
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movie Movie @relation(fields: [movieId], references: [id], onDelete: Cascade)
+
+  @@map("reviews")
+}
+
+// 6. Rating
+model Rating {
+  id        Int      @id @default(autoincrement())
+  score     Float // Thang điểm (ví dụ 1 - 10)
+  createdAt DateTime @default(now())
+
+  userId  Int
+  movieId Int
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movie Movie @relation(fields: [movieId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, movieId])
+  @@map("ratings")
+}
+
+// 7. Watchlist
+model Watchlist {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  movieId   Int
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movie Movie @relation(fields: [movieId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, movieId]) // Một phim không trùng lặp trong 1 watchlist
+  @@map("watchlist")
+}
