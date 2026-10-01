@@ -23,7 +23,7 @@ try {
   const swaggerDoc = YAML.load(path.join(__dirname, '..', 'docs', 'swagger.yaml'));
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
 } catch (err) {
-  console.warn('⚠️  Swagger doc not found – /api-docs disabled');
+  console.warn('Swagger doc not found – /api-docs disabled');
 }
 
 app.get('/health', (_req, res) => {
