@@ -45,10 +45,10 @@ async function runScenario(opts) {
 }
 
 (async () => {
-  console.log('🚀 CineRate Load Test');
+  console.log('CineRate Load Test');
   console.log(`Target: ${BASE_URL}\n`);
   for (const scenario of scenarios) {
     await runScenario(scenario);
   }
-  console.log('\n✅ All scenarios completed.');
+  console.log('\n All scenarios completed.');
 })();

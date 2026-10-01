@@ -4,18 +4,6 @@ const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'cinerate-secret-key';
 
-/**
- * ┌─────────────────────────────────────────────────────────┐
- *  Middleware xác thực JWT tập trung
- * │─────────────────────────────────────────────────────────│
- *  Nhiệm vụ của [Thành viên A]:
- *  1. Đọc header `req.headers.authorization`
- *  2. Kiểm tra format `Bearer <token>`
- *  3. Dùng `jwt.verify(token, JWT_SECRET)` để giải mã
- *  4. Gán payload đã giải mã vào `req.user`
- *  5. Gọi `next()` để cho phép request đi tiếp
- * └─────────────────────────────────────────────────────────┘
- */
 function authenticate(req, res, next) {
   const authHeader = req.headers.authorization;
 

@@ -11,9 +11,8 @@ const GENRES = [
 ];
 
 async function main() {
-  console.log('🌱 Seeding database...');
+  console.log('Seeding database...');
 
-  // 1. Thể loại (Genres)
   for (const name of GENRES) {
     await prisma.genre.upsert({
       where: { name },
@@ -23,7 +22,6 @@ async function main() {
   }
   console.log(`  ✔ ${GENRES.length} thể loại (Genres)`);
 
-  // 2. User mẫu
   const passwordHash = await bcrypt.hash('123456', 10);
   const user = await prisma.user.upsert({
     where: { username: 'testuser' },
@@ -36,7 +34,6 @@ async function main() {
   });
   console.log('  ✔ User mẫu: testuser / 123456');
 
-  // 3. Phim mẫu (Movies)
   const action = await prisma.genre.findUnique({ where: { name: 'Action' } });
   const scifi = await prisma.genre.findUnique({ where: { name: 'Science Fiction' } });
 
@@ -74,7 +71,6 @@ async function main() {
   });
   console.log('  ✔ 2 phim mẫu: Inception, Interstellar');
 
-  // 4. Rating mẫu
   await prisma.rating.upsert({
     where: { userId_movieId: { userId: user.id, movieId: movie1.id } },
     update: {},
@@ -86,7 +82,6 @@ async function main() {
   });
   console.log('  ✔ Rating mẫu (9.5/10 cho Inception)');
 
-  // 5. Review mẫu
   await prisma.review.create({
     data: {
       content: 'Phim cực kỳ xuất sắc, kịch bản đa tầng và kỹ xảo tuyệt đỉnh!',
@@ -96,7 +91,6 @@ async function main() {
   });
   console.log('  ✔ Review mẫu cho Inception');
 
-  // 6. Watchlist mẫu
   await prisma.watchlist.upsert({
     where: { userId_movieId: { userId: user.id, movieId: movie2.id } },
     update: {},
