@@ -101,6 +101,33 @@ paths:
       responses:
         '200':
           description: Thông tin user
+    put:
+      tags: [Auth]
+      summary: cập nhật thông tin cá nhân hoặc đổi mật khẩu (Cần Auth)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                currentPassword:
+                  type: string
+                newPassword:
+                  type: string
+      responses:
+        '200':
+          description: Cập nhật thành công
+        '400':
+          description: Sai mật khẩu hoặc thông tin không hợp lệ
+        '401':
+          description: chưa đăng nhập
+        '409':
+          description: email mới đã được sử dụng
 
   /api/movies:
     get:

@@ -10,6 +10,7 @@ const path = require('path');
 
 const container = require('./container');
 const errorHandler = require('./middlewares/error.middleware');
+const authRoutes = require('./routes/auth.routes');
 
 const app = express();
 
@@ -33,6 +34,8 @@ app.get('/health', (_req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+app.use('/api/auth', authRoutes(container));
 
 app.use((_req, res) => {
   res.status(404).json({ error: 'Endpoint không tồn tại' });
