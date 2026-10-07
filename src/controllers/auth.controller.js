@@ -21,6 +21,11 @@ class AuthController {
     const profile = await this.authService.getProfile(req.user.id);
     res.status(200).json({ data: profile });
   });
+
+  updateProfile = catchAsync(async (req, res) => {
+    const updateUser = await this.authService.updateProfile(req.user.id, req.body);
+    res.status(200).json({ message: 'Cập nhật thông tin thành công', data: updateUser });
+  });
 }
 
 module.exports = AuthController;
