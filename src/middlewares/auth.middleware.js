@@ -1,5 +1,6 @@
 'use strict';
 
+const AppError = require('../utils/app-error');
 const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'cinerate-secret-key';
