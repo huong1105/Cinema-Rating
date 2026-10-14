@@ -99,9 +99,9 @@ async function main() {
       movieId: movie2.id,
     },
   });
-  console.log('  ✔ Watchlist mẫu (lưu phim Interstellar)');
+  console.log(' Watchlist mẫu (lưu phim Interstellar)');
 
-  console.log('\n✅ Seed hoàn tất!');
+  console.log('\n Seed hoàn tất!');
 }
 
 main()

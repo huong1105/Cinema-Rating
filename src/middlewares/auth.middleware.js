@@ -1,5 +1,6 @@
 'use strict';
 
+const AppError = require('../utils/app-error');
 const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'cinerate-secret-key';
@@ -15,10 +16,10 @@ function authenticate(req, res, next) {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded; // { id, username }
+    req.user = decoded;
     next();
   } catch (err) {
-    return res.status(401).json({ error: 'Token không hợp lệ hoặc đã hết hạn.' });
+    next(new AppError('Token không hợp lệ hoặc đã hết hạn.', 401));
   }
 }
 
