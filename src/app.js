@@ -11,6 +11,8 @@ const path = require('path');
 const container = require('./container');
 const errorHandler = require('./middlewares/error.middleware');
 const authRoutes = require('./routes/auth.routes');
+const movieRoutes = require('./routes/movie.routes');
+const genreRoutes = require('./routes/genre.routes');
 
 const app = express();
 
@@ -36,6 +38,8 @@ app.get('/health', (_req, res) => {
 });
 
 app.use('/api/auth', authRoutes(container));
+app.use('/api/movies', movieRoutes(container));
+app.use('/api/genres', genreRoutes(container));
 
 app.use((_req, res) => {
   res.status(404).json({ error: 'Endpoint không tồn tại' });

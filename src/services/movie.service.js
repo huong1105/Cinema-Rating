@@ -51,9 +51,9 @@ class MovieService {
     }
 
     if (releaseYear != null &&
-        (!Number.isInteger(releaseYear) ||
-         releaseYear < 1888 ||
-         releaseYear > new Date().getFullYear() + 10)) {
+      (!Number.isInteger(releaseYear) ||
+        releaseYear < 1888 ||
+        releaseYear > new Date().getFullYear() + 10)) {
       throw new AppError('Năm phát hành không hợp lệ', 400);
     }
 

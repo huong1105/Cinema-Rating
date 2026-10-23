@@ -15,6 +15,12 @@ tags:
     description: Đăng ký, Đăng nhập & Profile
   - name: Movies
     description: Xem danh sách, chi tiết, thêm & xóa phim
+  - name: Genres
+    description: Thể loại phim
+  - name: Ratings & Reviews
+    description: Đánh giá điểm và viết nhận xét bình luận
+  - name: Watchlist
+    description: Danh sách phim muốn xem sau của người dùng
 
 components:
   securitySchemes:
@@ -192,3 +198,138 @@ paths:
       responses:
         '200':
           description: Xóa phim thành công
+
+  /api/genres:
+    get:
+      tags: [Genres]
+      summary: Lấy danh sách thể loại phim
+      responses:
+        '200':
+          description: Danh sách thể loại
+
+  /api/movies/{id}/ratings:
+    post:
+      tags: [Ratings & Reviews]
+      summary: Chấm điểm đánh giá phim (Thang điểm 1 - 10)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [score]
+              properties:
+                score:
+                  type: number
+                  minimum: 1
+                  maximum: 10
+                  example: 8.5
+      responses:
+        '200':
+          description: Chấm điểm thành công
+        '400':
+          description: Điểm không hợp lệ (phải từ 1 đến 10)
+        '401':
+          description: Chưa đăng nhập
+
+  /api/movies/{id}/reviews:
+    get:
+      tags: [Ratings & Reviews]
+      summary: Xem danh sách bình luận/nhận xét của một phim
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Danh sách bình luận
+    post:
+      tags: [Ratings & Reviews]
+      summary: Viết bình luận/nhận xét cho phim (Cần Auth)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [content]
+              properties:
+                content:
+                  type: string
+                  example: "Phim rất hay, kỹ xảo xuất sắc và cốt truyện bất ngờ!"
+      responses:
+        '201':
+          description: Gửi bình luận thành công
+        '401':
+          description: Chưa đăng nhập
+
+  /api/watchlist:
+    get:
+      tags: [Watchlist]
+      summary: Lấy danh sách phim muốn xem của người dùng hiện tại (Cần Auth)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Danh sách phim trong Watchlist
+        '401':
+          description: Chưa đăng nhập
+    post:
+      tags: [Watchlist]
+      summary: Thêm phim vào danh sách xem sau (Cần Auth)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [movieId]
+              properties:
+                movieId:
+                  type: integer
+                  example: 1
+      responses:
+        '201':
+          description: Đã thêm vào Watchlist
+        '409':
+          description: Phim đã có trong Watchlist
+        '401':
+          description: Chưa đăng nhập
+
+  /api/watchlist/{movieId}:
+    delete:
+      tags: [Watchlist]
+      summary: Xóa phim khỏi danh sách xem sau (Cần Auth)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: movieId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Xóa khỏi Watchlist thành công
+        '401':
+          description: Chưa đăng nhập
