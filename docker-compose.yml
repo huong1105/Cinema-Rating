@@ -6,13 +6,14 @@ services:
     ports:
       - "${PORT:-3000}:3000"
     environment:
+      - PORT=3000
       - NODE_ENV=production
-      - DATABASE_URL=file:./prod.db
-      - JWT_SECRET=${JWT_SECRET:-super-secret-change-me}
+      - DATABASE_URL=file:/app/data/prod.db
+      - JWT_SECRET=${JWT_SECRET:?Set JWT_SECRET before starting CineRate}
       - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-7d}
       - BCRYPT_SALT_ROUNDS=${BCRYPT_SALT_ROUNDS:-10}
     volumes:
-      - sqlite-data:/app/prisma
+      - sqlite-data:/app/data
     restart: unless-stopped
 
 volumes:
