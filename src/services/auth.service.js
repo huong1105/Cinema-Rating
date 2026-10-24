@@ -127,7 +127,6 @@ class AuthService {
             id: updatedUser.id,
             email: updatedUser.email,
             username: updatedUser.username,
-            updatedAt: updatedUser.updatedAt,
         };
     }
 }
