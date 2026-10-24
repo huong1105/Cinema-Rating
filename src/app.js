@@ -13,6 +13,9 @@ const errorHandler = require('./middlewares/error.middleware');
 const authRoutes = require('./routes/auth.routes');
 const movieRoutes = require('./routes/movie.routes');
 const genreRoutes = require('./routes/genre.routes');
+const ratingRoutes = require('./routes/rating.routes');
+const reviewRoutes = require('./routes/review.routes');
+const watchlistRoutes = require('./routes/watchlist.routes');
 
 const app = express();
 
@@ -38,6 +41,9 @@ app.get('/health', (_req, res) => {
 });
 
 app.use('/api/auth', authRoutes(container));
+app.use('/api', ratingRoutes(container));
+app.use('/api', reviewRoutes(container));
+app.use('/api/watchlist', watchlistRoutes(container));
 app.use('/api/movies', movieRoutes(container));
 app.use('/api/genres', genreRoutes(container));
 
