@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520" role="img" aria-labelledby="title desc">
+  <title id="title">CQRS read and write paths</title>
+  <desc id="desc">Read requests use cache and a read repository; write requests use a write service and repository, which invalidates cache.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#64748b"/></marker>
+    <marker id="dashArrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#db2777"/></marker>
+    <style>text{font-family:Arial,sans-serif;fill:#172033}.node{font-size:15px;font-weight:700}.hint{font-size:13px;fill:#475569}.title{font-size:22px;font-weight:700}</style>
+  </defs>
+  <rect width="1200" height="520" rx="18" fill="#f8fafc"/>
+  <text x="600" y="42" text-anchor="middle" class="title">Tách luồng đọc và ghi (CQRS)</text>
+  <rect x="45" y="205" width="125" height="76" rx="14" fill="#e2e8f0" stroke="#64748b" stroke-width="2"/><text x="107" y="250" text-anchor="middle" class="node">Client</text>
+  <rect x="235" y="205" width="135" height="76" rx="14" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/><text x="302" y="250" text-anchor="middle" class="node">Router</text>
+  <rect x="435" y="205" width="155" height="76" rx="14" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/><text x="512" y="250" text-anchor="middle" class="node">Controller</text>
+  <line x1="170" y1="243" x2="230" y2="243" stroke="#64748b" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="370" y1="243" x2="430" y2="243" stroke="#64748b" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="650" y="113" text-anchor="middle" class="hint">GET — query path</text>
+  <rect x="650" y="135" width="150" height="70" rx="14" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/><text x="725" y="177" text-anchor="middle" class="node">Cache</text>
+  <rect x="875" y="135" width="190" height="70" rx="14" fill="#f3e8ff" stroke="#9333ea" stroke-width="2"/><text x="970" y="177" text-anchor="middle" class="node">Read Repository</text>
+  <line x1="590" y1="220" x2="650" y2="170" stroke="#16a34a" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="800" y1="170" x2="870" y2="170" stroke="#16a34a" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="835" y="157" text-anchor="middle" class="hint">cache miss</text>
+  <text x="1100" y="113" text-anchor="middle" class="hint">SQLite WAL</text>
+  <ellipse cx="1110" cy="151" rx="58" ry="13" fill="#bae6fd" stroke="#0284c7" stroke-width="2"/>
+  <path d="M1052 151 v42 c0 8 26 14 58 14 s58-6 58-14 v-42" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+  <path d="M1052 173 c0 8 26 14 58 14 s58-6 58-14" fill="none" stroke="#0284c7" stroke-width="1.5"/>
+  <line x1="1065" y1="170" x2="1055" y2="170" stroke="#64748b" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="650" y="352" text-anchor="middle" class="hint">POST / PUT / DELETE — command path</text>
+  <rect x="650" y="372" width="180" height="70" rx="14" fill="#ffedd5" stroke="#ea580c" stroke-width="2"/><text x="740" y="414" text-anchor="middle" class="node">Write Service</text>
+  <rect x="875" y="372" width="190" height="70" rx="14" fill="#f3e8ff" stroke="#9333ea" stroke-width="2"/><text x="970" y="414" text-anchor="middle" class="node">Write Repository</text>
+  <line x1="590" y1="266" x2="650" y2="407" stroke="#ea580c" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="830" y1="407" x2="870" y2="407" stroke="#ea580c" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="1065" y1="407" x2="1110" y2="230" stroke="#64748b" stroke-width="3" marker-end="url(#arrow)"/>
+  <path d="M970 372 C970 290 725 285 725 210" fill="none" stroke="#db2777" stroke-width="2.5" stroke-dasharray="8 6" marker-end="url(#dashArrow)"/>
+  <text x="835" y="294" text-anchor="middle" class="hint" fill="#be185d">invalidate cache</text>
+</svg>

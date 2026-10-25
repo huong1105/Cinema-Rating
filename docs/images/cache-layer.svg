@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1150" height="270" viewBox="0 0 1150 270" role="img" aria-labelledby="title desc">
+  <title id="title">Cache layer in the data path</title>
+  <desc id="desc">The cache sits between the service and repository before Prisma and SQLite.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#64748b"/></marker>
+    <style>text{font-family:Arial,sans-serif;fill:#172033}.node{font-size:15px;font-weight:700}.title{font-size:22px;font-weight:700}</style>
+  </defs>
+  <rect width="1150" height="270" rx="18" fill="#f8fafc"/>
+  <text x="575" y="42" text-anchor="middle" class="title">Cache trong đường xử lý dữ liệu</text>
+  <g stroke="#64748b" stroke-width="3" marker-end="url(#arrow)">
+    <line x1="190" y1="155" x2="235" y2="155"/><line x1="390" y1="155" x2="435" y2="155"/>
+    <line x1="620" y1="155" x2="665" y2="155"/><line x1="850" y1="155" x2="895" y2="155"/>
+  </g>
+  <rect x="35" y="112" width="155" height="86" rx="14" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/><text x="112" y="163" text-anchor="middle" class="node">Controller</text>
+  <rect x="240" y="112" width="150" height="86" rx="14" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/><text x="315" y="163" text-anchor="middle" class="node">Service</text>
+  <rect x="440" y="112" width="180" height="86" rx="14" fill="#fef3c7" stroke="#d97706" stroke-width="2"/><text x="530" y="163" text-anchor="middle" class="node">Cache Layer</text>
+  <rect x="670" y="112" width="180" height="86" rx="14" fill="#f3e8ff" stroke="#9333ea" stroke-width="2"/><text x="760" y="163" text-anchor="middle" class="node">Repository</text>
+  <rect x="900" y="112" width="205" height="86" rx="14" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/><text x="1002" y="163" text-anchor="middle" class="node">Prisma · SQLite</text>
+</svg>

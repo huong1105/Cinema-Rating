@@ -18,7 +18,7 @@ function authenticate(req, res, next) {
     const decoded = jwt.verify(token, JWT_SECRET);
     req.user = decoded;
     next();
-  } catch (err) {
+  } catch {
     next(new AppError('Token không hợp lệ hoặc đã hết hạn.', 401));
   }
 }

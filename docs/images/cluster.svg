@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="510" viewBox="0 0 1100 510" role="img" aria-labelledby="title desc">
+  <title id="title">Node.js cluster deployment pattern</title>
+  <desc id="desc">A master process distributes requests to four Node.js worker processes, all sharing SQLite.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#64748b"/></marker>
+    <style>text{font-family:Arial,sans-serif;fill:#172033}.node{font-size:15px;font-weight:700}.title{font-size:22px;font-weight:700}.hint{font-size:13px;fill:#475569}</style>
+  </defs>
+  <rect width="1100" height="510" rx="18" fill="#f8fafc"/>
+  <text x="550" y="38" text-anchor="middle" class="title">Cluster pattern — nhiều worker, một SQLite</text>
+  <rect x="475" y="65" width="150" height="58" rx="14" fill="#e2e8f0" stroke="#64748b" stroke-width="2"/><text x="550" y="100" text-anchor="middle" class="node">Client</text>
+  <rect x="430" y="160" width="240" height="66" rx="14" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/><text x="550" y="190" text-anchor="middle" class="node">Master process</text><text x="550" y="210" text-anchor="middle" class="hint">phân phối request</text>
+  <line x1="550" y1="123" x2="550" y2="155" stroke="#64748b" stroke-width="3" marker-end="url(#arrow)"/>
+  <g fill="none" stroke="#64748b" stroke-width="2.5" marker-end="url(#arrow)">
+    <path d="M550 226 V250 H150 V275"/><path d="M550 226 V250 H400 V275"/>
+    <path d="M550 226 V250 H650 V275"/><path d="M550 226 V250 H900 V275"/>
+  </g>
+  <rect x="65" y="280" width="170" height="74" rx="14" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/><text x="150" y="311" text-anchor="middle" class="node">Worker 1</text><text x="150" y="334" text-anchor="middle" class="hint">CPU 0</text>
+  <rect x="315" y="280" width="170" height="74" rx="14" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/><text x="400" y="311" text-anchor="middle" class="node">Worker 2</text><text x="400" y="334" text-anchor="middle" class="hint">CPU 1</text>
+  <rect x="565" y="280" width="170" height="74" rx="14" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/><text x="650" y="311" text-anchor="middle" class="node">Worker 3</text><text x="650" y="334" text-anchor="middle" class="hint">CPU 2</text>
+  <rect x="815" y="280" width="170" height="74" rx="14" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/><text x="900" y="311" text-anchor="middle" class="node">Worker 4</text><text x="900" y="334" text-anchor="middle" class="hint">CPU 3</text>
+  <g fill="none" stroke="#64748b" stroke-width="2.5" marker-end="url(#arrow)">
+    <path d="M150 354 V385 H450 V431"/><path d="M400 354 V397 H490 V431"/>
+    <path d="M650 354 V397 H610 V431"/><path d="M900 354 V385 H650 V431"/>
+  </g>
+  <ellipse cx="550" cy="430" rx="100" ry="20" fill="#bae6fd" stroke="#0284c7" stroke-width="2"/>
+  <path d="M450 430 V466 C450 477 495 486 550 486 S650 477 650 466 V430" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+  <path d="M450 449 C450 460 495 469 550 469 S650 460 650 449" fill="none" stroke="#0284c7" stroke-width="1.5"/>
+  <text x="550" y="463" text-anchor="middle" class="node">SQLite</text>
+</svg>
