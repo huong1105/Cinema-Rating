@@ -2,6 +2,7 @@
 'use strict';
 
 const AppError = require('../utils/app-error');
+const { parseId } = require('../utils/validate-id');
 
 class MovieService {
   constructor({ movieRepository, genreRepository }) {
@@ -14,9 +15,7 @@ class MovieService {
   }
 
   async getMovieById(id) {
-    if (!Number.isInteger(id) || id <= 0) {
-      throw new AppError('ID phim không hợp lệ', 400);
-    }
+    id = parseId(id, 'ID phim');
 
     const movie = await this.movieRepository.findById(id);
 
@@ -82,9 +81,7 @@ class MovieService {
   }
 
   async deleteMovie(id) {
-    if (!Number.isInteger(id) || id <= 0) {
-      throw new AppError('ID phim không hợp lệ', 400);
-    }
+    id = parseId(id, 'ID phim');
 
     const movie = await this.movieRepository.findById(id);
 

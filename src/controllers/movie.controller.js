@@ -13,9 +13,7 @@ class MovieController {
     });
 
     getMovieById = catchAsync(async (req, res) => {
-        const movie = await this.movieService.getMovieById(
-            Number(req.params.id)
-        );
+        const movie = await this.movieService.getMovieById(req.params.id);
         res.status(200).json({ data: movie });
     });
 
@@ -28,9 +26,7 @@ class MovieController {
     });
 
     deleteMovie = catchAsync(async (req, res) => {
-        const result = await this.movieService.deleteMovie(
-            Number(req.params.id)
-        );
+        const result = await this.movieService.deleteMovie(req.params.id);
         res.status(200).json(result);
     });
 }

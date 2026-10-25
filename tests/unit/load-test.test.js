@@ -1,10 +1,32 @@
 'use strict';
 
 const crypto = require('crypto');
-const { createScenarios, percentile, summarize } = require('../kaggle/load-test');
+const {
+  ALL_ENDPOINTS,
+  createAllEndpointConfig,
+  createScenarios,
+  percentile,
+  runMeasuredEndpoint,
+  summarize,
+} = require('../kaggle/load-test');
 
 describe('Load test reporting', () => {
   const credentials = { LOAD_TEST_USERNAME: 'benchmark-user', LOAD_TEST_PASSWORD: crypto.randomBytes(16).toString('hex') };
+
+  test('full benchmark has a handler for every backend API route and health endpoint', () => {
+    const implementation = runMeasuredEndpoint.toString();
+    expect(ALL_ENDPOINTS).toHaveLength(19);
+    for (const route of ALL_ENDPOINTS) {
+      expect(implementation).toContain(`case '${route}':`);
+    }
+  });
+
+  test('full benchmark uses safe defaults and requires a password', () => {
+    expect(createAllEndpointConfig({ LOAD_TEST_PASSWORD: 'temporary-password' })).toMatchObject({
+      baseUrl: 'http://localhost:3000', duration: 10, connections: 10, movieId: '1',
+    });
+    expect(() => createAllEndpointConfig({})).toThrow('LOAD_TEST_PASSWORD');
+  });
 
   test('requires explicit credentials and retains the original baseline settings', () => {
     expect(() => createScenarios({})).toThrow('LOAD_TEST_USERNAME');

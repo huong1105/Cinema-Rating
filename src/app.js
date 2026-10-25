@@ -28,7 +28,7 @@ app.use(express.urlencoded({ extended: true }));
 try {
   const swaggerDoc = YAML.load(path.join(__dirname, '..', 'docs', 'swagger.yaml'));
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
-} catch (err) {
+} catch {
   console.warn('Swagger doc not found – /api-docs disabled');
 }
 

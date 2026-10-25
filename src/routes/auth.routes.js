@@ -3,8 +3,6 @@
 const { Router } = require('express');
 const { authenticate } = require('../middlewares/auth.middleware');
 
-const router = Router();
-
 function authRoutes(container) {
     const router = Router();
     const ctrl = container.authController;
