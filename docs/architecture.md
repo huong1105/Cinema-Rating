@@ -26,7 +26,7 @@ CineRate là dịch vụ backend đánh giá phim, cung cấp REST API cho các 
 
 Các tầng được nối qua **dependency injection thủ công** tại [`container.js`](../src/container.js): tạo một `PrismaClient` duy nhất → inject vào repositories → inject repositories vào services → inject services vào controllers.
 
-**Kiểm tra đầu vào:** hiện chưa có tầng schema validator riêng. Service kiểm tra dữ liệu nghiệp vụ; [`validate-id.js`](../src/utils/validate-id.js) kiểm tra ID. Thư viện Zod và middleware validate chưa được dùng trong hệ thống.
+**Kiểm tra đầu vào:** hiện chưa có tầng schema validator riêng. Service kiểm tra dữ liệu nghiệp vụ; [`validate-id.js`](../src/utils/validate-id.js) kiểm tra ID.
 
 ## 3. Database
 
@@ -158,12 +158,3 @@ Thêm **Cache Layer** giữa Service và Repository, giữ nguyên contract inte
 ![So sánh kiến trúc hiện tại và các hướng cải tiến](./images/phase-comparison.svg)
 
 Ba cải tiến này độc lập, có thể áp dụng riêng lẻ và đo tác động từng cái. Khi đánh giá Pha 2, chạy cùng load test script, cùng cấu hình (connections, duration, seed data), cùng Kaggle CPU — so sánh RPS, latency và số lỗi trước/sau.
-
-## 7. Kiểm thử và lint
-
-```bash
-npm test
-npm run lint
-```
-
-`npm test` chạy unit và integration test bằng Jest. Integration test tạo SQLite riêng trong thư mục tạm, áp dụng migration rồi khởi động HTTP server ở cổng ngẫu nhiên. `npm run lint` chạy ESLint trên `src/` bằng cấu hình flat tại [`eslint.config.js`](../eslint.config.js); ESLint 10 yêu cầu Node.js `^20.19.0`, `^22.13.0` hoặc `>=24.0.0`.

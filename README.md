@@ -109,9 +109,9 @@ Script [`tests/kaggle/load-test.js`](./tests/kaggle/load-test.js) mặc định 
 | Biến | Mặc định | Ý nghĩa |
 |------|----------|---------|
 | `BASE_URL` | `http://localhost:3000` | URL server |
-| `DATABASE_URL` | — | Bắt buộc ở chế độ `all`; database benchmark, phải khớp DB của API |
-| `LOAD_TEST_PASSWORD` | — | Bắt buộc ở cả hai chế độ; mật khẩu fixture hoặc tài khoản test |
-| `LOAD_TEST_USERNAME` | — | Bắt buộc ở chế độ `baseline`; tài khoản test có sẵn |
+| `DATABASE_URL` | Không có | Bắt buộc ở chế độ `all`; database benchmark, phải khớp DB của API |
+| `LOAD_TEST_PASSWORD` | Không có | Bắt buộc ở cả hai chế độ; mật khẩu fixture hoặc tài khoản test |
+| `LOAD_TEST_USERNAME` | Không có | Bắt buộc ở chế độ `baseline`; tài khoản test có sẵn |
 | `LOAD_TEST_MODE` | `all` | `all` đo 19 route; `baseline` chạy 3 kịch bản gốc |
 | `LOAD_TEST_MOVIE_ID` | `1` | ID phim có sẵn dùng trong benchmark |
 | `LOAD_TEST_DURATION` | `10` | Giây / endpoint |
