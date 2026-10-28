@@ -6,7 +6,7 @@ CineRate là dịch vụ backend đánh giá phim, cung cấp REST API cho các 
 
 | | |
 |---|---|
-| **Ngôn ngữ** | JavaScript (Node.js 20+) |
+| **Ngôn ngữ** | JavaScript (Node.js 20.19+ cho bộ công cụ phát triển) |
 | **Framework** | Express 4 |
 | **ORM** | Prisma 6 |
 | **Database** | SQLite |
@@ -21,7 +21,7 @@ CineRate là dịch vụ backend đánh giá phim, cung cấp REST API cho các 
 **Nguyên tắc chính:**
 
 - **Tầng Presentation** — nhận HTTP request, xác thực JWT qua middleware, gọi service, trả JSON response. Phụ thuộc Express.
-- **Tầng Business Logic** — chứa toàn bộ quy tắc nghiệp vụ. **Không import Express, Prisma hay bất kỳ thư viện DB/framework nào.** Chỉ dùng JavaScript thuần và utility nội bộ (`AppError`, `parseId`, `validateUserId`).
+- **Tầng Business Logic** — chứa quy tắc nghiệp vụ, không import Express/Prisma và không truy vấn database trực tiếp; nhận repository qua constructor. AuthService hiện đọc cấu hình JWT từ `process.env` nên cấu hình môi trường vẫn gắn trực tiếp với service này.
 - **Tầng Data Access** — thực hiện truy vấn qua Prisma ORM. Mỗi entity có repository riêng, nhận `PrismaClient` qua constructor.
 
 Các tầng được nối qua **dependency injection thủ công** tại [`container.js`](../src/container.js): tạo một `PrismaClient` duy nhất → inject vào repositories → inject repositories vào services → inject services vào controllers.
@@ -90,13 +90,13 @@ Chi tiết request/response: [Swagger UI](http://localhost:3000/api-docs/) hoặ
 | `POST /api/auth/login` | 10 | 982.5 | 1585.3 | 1805.9 |
 | `POST /api/auth/register` | 10 | 1016.1 | 1355.6 | 1649.0 |
 
-**Tổng: 99,478 request / 193s ≈ 515 req/s.** 3 request timeout do SQLite single-writer lock dưới tải concurrent write.
+**Tổng: 99,478 request / 193s ≈ 515 req/s.** Có 3 request timeout dưới tải ghi đồng thời. Kết quả phù hợp với giả thuyết lock contention của SQLite, nhưng riêng benchmark này chưa xác nhận nguyên nhân duy nhất.
 
 ### Nhận xét
 
 - **GET endpoints** đạt 500–2000 RPS, latency trung bình < 20ms — SQLite đọc nhanh.
 - **Write endpoints** chỉ 10–76 RPS, p99 lên tới 1–2s — bottleneck chính là SQLite chỉ cho phép 1 writer tại mỗi thời điểm.
-- **Auth (register/login)** chậm nhất (~10 RPS) do bcrypt hash tốn CPU.
+- **Auth (register/login)** chậm nhất (~10 RPS). Bcrypt là tác vụ CPU đáng khảo sát thêm; các số liệu này chưa tự chứng minh Event Loop bị chặn.
 - Đây là số liệu baseline để so sánh trước/sau khi cải tiến ở Pha 2, trên cùng phần cứng và cấu hình.
 
 ## 6. Vấn đề kiến trúc và gợi ý cải tiến Pha 2
@@ -105,7 +105,7 @@ Phân tích dựa trên benchmark baseline và cấu trúc hiện tại. Chỉ l
 
 ### 6.1 Mất cân bằng đọc–ghi (Read-Write Asymmetry)
 
-Đây là vấn đề kiến trúc lớn nhất. Hệ thống hiện tại xử lý đọc và ghi qua cùng một đường — cùng process, cùng database connection, cùng tầng repository.
+Đây là vấn đề kiến trúc lớn nhất. Hệ thống hiện tại xử lý đọc và ghi qua cùng một API process và cùng database SQLite, qua các tầng controller, service và repository.
 
 **Dẫn chứng từ benchmark:**
 
@@ -114,7 +114,7 @@ Phân tích dựa trên benchmark baseline và cấu trúc hiện tại. Chỉ l
 | GET endpoints | 526 – 2094 | 4 – 19 ms |
 | Write endpoints | 10 – 76 | 129 – 1016 ms |
 
-Chênh lệch **10–60 lần**. Nguyên nhân gốc: SQLite dùng file-level lock, chỉ cho phép **1 writer tại mỗi thời điểm** — toàn bộ write request xếp hàng tuần tự kể cả khi ghi vào bảng khác nhau. Ở mức 10 concurrent clients đã có 3 request timeout.
+Chênh lệch **10–60 lần**. SQLite chỉ cho phép **một writer tại mỗi thời điểm** trên cùng database. Các writer đồng thời có thể phải chờ hoặc gặp lỗi lock/busy tùy tình huống; không nên hiểu là mọi request ghi đều tự xếp hàng tuần tự. Ở mức 10 client đồng thời, benchmark ghi nhận 3 request timeout.
 
 **Gợi ý kiến trúc:**
 
@@ -122,27 +122,27 @@ Chênh lệch **10–60 lần**. Nguyên nhân gốc: SQLite dùng file-level lo
 
 ![Sơ đồ CQRS tách đường đọc và ghi](./images/cqrs.svg)
 
-**SQLite WAL mode:** Cho phép đọc đồng thời với ghi mà không cần thay database engine. Đây là cải tiến nhỏ nhất nhưng tác động lớn nhất đến write throughput.
+**SQLite WAL mode:** Có thể cho phép reader tiếp tục đọc trong khi writer hoạt động, giảm một phần xung đột giữa đọc và ghi. WAL vẫn chỉ hỗ trợ một writer tại mỗi thời điểm, nên cần đo lại và không nên xem đây là cách tự giải quyết nghẽn giữa nhiều request ghi.
 
 ### 6.2 Single-process — không sử dụng tài nguyên phần cứng
 
-Node.js chạy **1 process = 1 CPU core**. Kaggle cung cấp 4 vCPU nhưng hệ thống chỉ dùng 1. Nghĩa là 75% tài nguyên CPU bị bỏ phí.
+Hiện tại `server.js` khởi chạy một Node.js process với một JavaScript Event Loop chính. Điều này giới hạn khả năng chạy song song phần JavaScript CPU-bound trong ứng dụng. Benchmark chưa đo mức sử dụng CPU từng core, nên chưa đủ căn cứ kết luận chính xác rằng 75% CPU bị bỏ phí.
 
 Đây là vấn đề về **deployment architecture** — cách hệ thống được triển khai để khai thác phần cứng.
 
 **Gợi ý kiến trúc:**
 
-**Cluster pattern:** Dùng Node.js Cluster module hoặc PM2 để chạy nhiều worker process. Mỗi worker là một bản sao đầy đủ của ứng dụng, chia tải ở tầng OS.
+**Cluster pattern:** Dùng Node.js Cluster module hoặc PM2 để chạy nhiều worker process. Mỗi worker là một bản sao đầy đủ của ứng dụng, chia tải ở tầng OS; lợi ích thực tế cần được đo trên cùng workload.
 
 ![Sơ đồ cluster với bốn worker dùng chung SQLite](./images/cluster.svg)
 
-Lưu ý với SQLite: nhiều process ghi đồng thời sẽ **tăng lock contention**. Cluster chỉ hiệu quả khi kết hợp với WAL mode (6.1) hoặc khi workload chủ yếu là đọc.
+Lưu ý với SQLite: nhiều process ghi đồng thời có thể **tăng lock contention**; WAL không biến SQLite thành database nhiều writer. Cluster phù hợp hơn với workload chủ yếu là đọc và cần được benchmark sau khi triển khai.
 
 ### 6.3 Không có tầng cache trong kiến trúc
 
 Kiến trúc hiện tại gồm 3 tầng: Controller → Service → Repository. Mỗi request dù đọc dữ liệu giống hệt nhau đều đi trọn vẹn 3 tầng rồi truy vấn DB.
 
-Đây là vấn đề **thiếu tầng** trong kiến trúc. Với workload đọc nhiều ghi ít (đa số user xem phim, ít người tạo phim), một tầng cache sẽ thay đổi đáng kể hiệu năng.
+Đây là vấn đề **thiếu tầng** trong kiến trúc. Với workload đọc nhiều ghi ít, cache có thể giảm các truy vấn lặp lại; mức cải thiện phụ thuộc dữ liệu, tỷ lệ cache hit và chiến lược invalidation, cần đo bằng benchmark.
 
 **Gợi ý kiến trúc:**
 
@@ -158,3 +158,56 @@ Thêm **Cache Layer** giữa Service và Repository, giữ nguyên contract inte
 ![So sánh kiến trúc hiện tại và các hướng cải tiến](./images/phase-comparison.svg)
 
 Ba cải tiến này độc lập, có thể áp dụng riêng lẻ và đo tác động từng cái. Khi đánh giá Pha 2, chạy cùng load test script, cùng cấu hình (connections, duration, seed data), cùng Kaggle CPU — so sánh RPS, latency và số lỗi trước/sau.
+
+---
+
+## 7. Kiến trúc Triển khai & Đóng gói (Deployment Architecture)
+
+### 7.1 Docker image
+
+Dockerfile có ba stage: base, builder và runtime.
+
+![Sơ đồ luồng build image Docker và khởi chạy container](./images/deployment-flow.svg)
+
+1. **Base:** Dùng image `node:20-alpine` và cài `openssl`.
+2. **Builder:** Sao chép `package*.json` và `prisma/`, chạy `npm ci` rồi `prisma generate`.
+3. **Runtime:** Dùng lại base image, đặt `NODE_ENV=production`, sao chép toàn bộ `node_modules` từ builder cùng `prisma/`, `src/` và `docs/`. Tạo `/app/data` và khai báo cổng `3000`.
+
+Builder chạy `npm ci` mà không loại dev dependencies; runtime nhận nguyên thư mục `node_modules` này. Prisma CLI được giữ lại để chạy migration lúc khởi động. Dockerfile không khai báo `USER`, nên container chạy bằng user mặc định của image nền.
+
+### 7.2 Quản lý dữ liệu bền vững (Persistence) & Vòng đời Khởi chạy
+
+- **Database:** Trong Compose, `DATABASE_URL` là `file:/app/data/prod.db`.
+- **Volume:** Named volume `sqlite-data` được mount vào `/app/data`. File `prod.db` nằm trong volume này và được giữ lại khi container dừng hoặc được tạo lại; `docker compose down -v` xóa volume.
+- **Khởi động:** Image chạy migration rồi mới khởi chạy HTTP server:
+  ```bash
+  sh -c "./node_modules/.bin/prisma migrate deploy && node src/server.js"
+  ```
+- Lệnh Compose khởi chạy service là `docker compose up --build -d`. Service có tên/container `cinerate-api`, ánh xạ cổng máy host sang cổng `3000` trong container và đặt restart policy `unless-stopped`.
+
+### 7.3 Bảng biến môi trường triển khai
+| Biến | Local / mặc định ứng dụng | Docker Compose | Hiện trạng |
+|---|---|---|---|
+| `PORT` | `3000` | Container dùng `3000`; host dùng `${PORT:-3000}` | Cổng HTTP của server |
+| `NODE_ENV` | `development` | `production` | Chế độ chạy |
+| `DATABASE_URL` | `file:./dev.db` trong `.env.example` | `file:/app/data/prod.db` | Database SQLite |
+| `JWT_SECRET` | Mẫu `.env.example` có giá trị placeholder | Bắt buộc có giá trị khi Compose chạy | Khi chạy app trực tiếp mà thiếu biến, mã Auth dùng fallback `cinerate-secret-key` |
+| `JWT_EXPIRES_IN` | `7d` | `7d` | Thời hạn JWT; AuthService đọc biến này |
+| `BCRYPT_SALT_ROUNDS` | `10` trong mẫu môi trường | Compose truyền `10` | AuthService hiện truyền cố định `10` cho bcrypt; biến môi trường không thay đổi giá trị này |
+
+---
+
+## 8. Đặc tả API OpenAPI & Hướng dẫn Preview
+
+Đặc tả 18 endpoints RESTful được duy trì theo **OpenAPI Specification 3.0.3** tại tệp YAML: [`docs/swagger.yaml`](./swagger.yaml). Mức độ chi tiết request/response hiện chưa đồng đều giữa các endpoint.
+
+### 8.1 Các phương thức Preview đặc tả API
+1. **Giao diện tương tác Swagger UI (Khuyên dùng):**
+   - Khi máy chủ khởi chạy (`npm run dev`), truy cập đường dẫn: **`http://localhost:3000/api-docs/`**.
+   - Hỗ trợ xem các endpoint và schema đã khai báo, cùng tính năng **"Try it out"** để gửi request và kiểm tra phản hồi trực tiếp.
+2. **Preview trên IDE Visual Studio Code:**
+   - Cài đặt extension: **OpenAPI (Swagger) Editor** hoặc **Swagger Viewer**.
+   - Mở file [`docs/swagger.yaml`](./swagger.yaml), nhấn tổ hợp phím `Shift + Alt + E` để mở cửa sổ preview trực tiếp bên cạnh mã nguồn.
+3. **Preview trực tuyến:**
+   - Mở trình biên tập online [Swagger Editor](https://editor.swagger.io/) và import file [`swagger.yaml`](./swagger.yaml).
+

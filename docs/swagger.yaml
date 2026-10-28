@@ -30,7 +30,12 @@ components:
       bearerFormat: JWT
 
   schemas:
+<<<<<<< Updated upstream
     Genre:
+=======
+    Movie:
+      description: DTO chi tiết phim kèm thể loại (API Data Transfer Object)
+>>>>>>> Stashed changes
       type: object
       required: [id, name]
       properties:
@@ -112,6 +117,7 @@ components:
           example: [10]
 
     ErrorResponse:
+      description: DTO định dạng phản hồi lỗi chuẩn của hệ thống
       type: object
       required: [error]
       properties:
@@ -124,6 +130,7 @@ components:
                 message:
                   type: string
     MoviePreview:
+      description: DTO thông tin phim thu gọn (dùng nhúng trong Rating và Watchlist)
       type: object
       required: [id, title, releaseYear]
       properties:
@@ -135,6 +142,7 @@ components:
           type: integer
           nullable: true
     PublicAuthor:
+      description: DTO thông tin công khai của tác giả review (ẩn email, mật khẩu)
       type: object
       required: [id, username]
       properties:
@@ -143,6 +151,7 @@ components:
         username:
           type: string
     Rating:
+      description: DTO bản ghi chấm điểm của người dùng
       type: object
       required: [id, userId, movieId, score, createdAt]
       properties:
@@ -160,14 +169,16 @@ components:
           type: string
           format: date-time
     RatingWithMovie:
+      description: DTO điểm đánh giá kèm thông tin tóm tắt của phim
       allOf:
-        - $ref: '#/components/schemas/Rating'
+        - $ref: "#/components/schemas/Rating"
         - type: object
           required: [movie]
           properties:
             movie:
-              $ref: '#/components/schemas/MoviePreview'
+              $ref: "#/components/schemas/MoviePreview"
     RatingSummary:
+      description: DTO kết quả tổng hợp điểm trung bình của phim
       type: object
       required: [averageRating, ratingCount]
       properties:
@@ -179,6 +190,7 @@ components:
           type: integer
           minimum: 0
     Review:
+      description: DTO bài nhận xét kèm tác giả công khai
       type: object
       required: [id, userId, movieId, content, createdAt, user]
       properties:
@@ -194,8 +206,9 @@ components:
           type: string
           format: date-time
         user:
-          $ref: '#/components/schemas/PublicAuthor'
+          $ref: "#/components/schemas/PublicAuthor"
     WatchlistItem:
+      description: DTO mục trong danh sách xem sau của người dùng
       type: object
       required: [id, userId, movieId, createdAt]
       properties:
@@ -209,14 +222,16 @@ components:
           type: string
           format: date-time
     WatchlistItemWithMovie:
+      description: DTO mục watchlist kèm thông tin tóm tắt của phim
       allOf:
-        - $ref: '#/components/schemas/WatchlistItem'
+        - $ref: "#/components/schemas/WatchlistItem"
         - type: object
           required: [movie]
           properties:
             movie:
-              $ref: '#/components/schemas/MoviePreview'
+              $ref: "#/components/schemas/MoviePreview"
     MessageResponse:
+      description: DTO thông báo thao tác thành công (xóa review/watchlist)
       type: object
       required: [message]
       properties:
@@ -256,7 +271,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: "#/components/schemas/ErrorResponse"
           example:
             error:
               message: ID phim không hợp lệ
@@ -265,7 +280,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: "#/components/schemas/ErrorResponse"
           example:
             error:
               message: Token không hợp lệ hoặc đã hết hạn.
@@ -274,7 +289,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: "#/components/schemas/ErrorResponse"
           example:
             error:
               message: Bạn không có quyền xóa bài đánh giá của người khác
@@ -283,7 +298,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: "#/components/schemas/ErrorResponse"
           example:
             error:
               message: Không tìm thấy phim
@@ -292,7 +307,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: "#/components/schemas/ErrorResponse"
           example:
             error:
               message: Phim đã có trong Watchlist
@@ -301,7 +316,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: "#/components/schemas/ErrorResponse"
           example:
             error:
               message: Internal Server Error
@@ -311,7 +326,7 @@ paths:
     get:
       summary: Kiểm tra trạng thái server
       responses:
-        '200':
+        "200":
           description: OK
 
   /api/auth/register:
@@ -333,7 +348,7 @@ paths:
                 password:
                   type: string
       responses:
-        '201':
+        "201":
           description: Đăng ký thành công
 
   /api/auth/login:
@@ -353,7 +368,7 @@ paths:
                 password:
                   type: string
       responses:
-        '200':
+        "200":
           description: Đăng nhập thành công
 
   /api/auth/profile:
@@ -363,7 +378,7 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '200':
+        "200":
           description: Thông tin user
     put:
       tags: [Auth]
@@ -384,13 +399,13 @@ paths:
                 newPassword:
                   type: string
       responses:
-        '200':
+        "200":
           description: Cập nhật thành công
-        '400':
+        "400":
           description: Sai mật khẩu hoặc thông tin không hợp lệ
-        '401':
+        "401":
           description: chưa đăng nhập
-        '409':
+        "409":
           description: email mới đã được sử dụng
 
   /api/movies:
@@ -399,7 +414,7 @@ paths:
       summary: Lấy danh sách phim kèm thể loại
       description: Trả về danh sách tất cả các bộ phim trong hệ thống kèm thể loại liên kết, sắp xếp theo ID tăng dần.
       responses:
-        '200':
+        "200":
           description: Danh sách phim kèm thể loại
           content:
             application/json:
@@ -453,7 +468,7 @@ paths:
               releaseYear: 2014
               genreIds: [10]
       responses:
-        '201':
+        "201":
           description: Tạo phim thành công
           content:
             application/json:
@@ -497,7 +512,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/MovieId'
       responses:
-        '200':
+        "200":
           description: Chi tiết phim
           content:
             application/json:
@@ -537,7 +552,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/MovieId'
       responses:
-        '200':
+        "200":
           description: Xóa phim thành công
           content:
             application/json:
@@ -560,7 +575,7 @@ paths:
       summary: Lấy danh sách thể loại phim
       description: Trả về danh sách tất cả các thể loại phim có trong hệ thống, sắp xếp theo ID tăng dần.
       responses:
-        '200':
+        "200":
           description: Danh sách thể loại
           content:
             application/json:
@@ -591,7 +606,7 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - $ref: '#/components/parameters/MovieId'
+        - $ref: "#/components/parameters/MovieId"
       requestBody:
         required: true
         content:
@@ -606,7 +621,7 @@ paths:
                   maximum: 10
                   example: 8.5
       responses:
-        '200':
+        "200":
           description: Chấm điểm hoặc cập nhật điểm thành công.
           content:
             application/json:
@@ -617,27 +632,34 @@ paths:
                   message:
                     type: string
                   data:
-                    $ref: '#/components/schemas/Rating'
+                    $ref: "#/components/schemas/Rating"
               example:
                 message: Chấm điểm thành công
-                data: {id: 1, userId: 1, movieId: 1, score: 8.5, createdAt: '2026-10-24T00:00:00.000Z'}
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+                data:
+                  {
+                    id: 1,
+                    userId: 1,
+                    movieId: 1,
+                    score: 8.5,
+                    createdAt: "2026-10-24T00:00:00.000Z",
+                  }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 
   /api/movies/{id}/ratings/summary:
     get:
       tags: [Ratings & Reviews]
       summary: Xem điểm trung bình và số lượt chấm điểm của phim
       parameters:
-        - $ref: '#/components/parameters/MovieId'
+        - $ref: "#/components/parameters/MovieId"
       responses:
-        '200':
+        "200":
           description: Tổng hợp điểm; phim chưa có rating trả averageRating null và ratingCount 0.
           content:
             application/json:
@@ -646,18 +668,18 @@ paths:
                 required: [data]
                 properties:
                   data:
-                    $ref: '#/components/schemas/RatingSummary'
+                    $ref: "#/components/schemas/RatingSummary"
               examples:
                 rated:
-                  value: {data: {averageRating: 8.5, ratingCount: 2}}
+                  value: { data: { averageRating: 8.5, ratingCount: 2 } }
                 unrated:
-                  value: {data: {averageRating: null, ratingCount: 0}}
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+                  value: { data: { averageRating: null, ratingCount: 0 } }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 
   /api/ratings/me:
     get:
@@ -667,7 +689,7 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '200':
+        "200":
           description: Danh sách rating kèm thông tin phim; có thể rỗng.
           content:
             application/json:
@@ -678,14 +700,21 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/RatingWithMovie'
+                      $ref: "#/components/schemas/RatingWithMovie"
               example:
                 data:
-                  - {id: 1, userId: 1, movieId: 1, score: 8.5, createdAt: '2026-10-24T00:00:00.000Z', movie: {id: 1, title: Inception, releaseYear: 2010}}
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+                  - {
+                      id: 1,
+                      userId: 1,
+                      movieId: 1,
+                      score: 8.5,
+                      createdAt: "2026-10-24T00:00:00.000Z",
+                      movie: { id: 1, title: Inception, releaseYear: 2010 },
+                    }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 
   /api/movies/{id}/reviews:
     get:
@@ -693,9 +722,9 @@ paths:
       summary: Xem danh sách bình luận/nhận xét của một phim
       description: Công khai; sắp theo createdAt giảm dần rồi id giảm dần. Thông tin tác giả chỉ gồm id và username.
       parameters:
-        - $ref: '#/components/parameters/MovieId'
+        - $ref: "#/components/parameters/MovieId"
       responses:
-        '200':
+        "200":
           description: Danh sách bình luận; phim chưa có bình luận trả mảng rỗng.
           content:
             application/json:
@@ -706,16 +735,23 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Review'
+                      $ref: "#/components/schemas/Review"
               example:
                 data:
-                  - {id: 1, userId: 1, movieId: 1, content: Phim rất hay, createdAt: '2026-10-24T00:00:00.000Z', user: {id: 1, username: testuser}}
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+                  - {
+                      id: 1,
+                      userId: 1,
+                      movieId: 1,
+                      content: Phim rất hay,
+                      createdAt: "2026-10-24T00:00:00.000Z",
+                      user: { id: 1, username: testuser },
+                    }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
     post:
       tags: [Ratings & Reviews]
       summary: Viết bình luận/nhận xét cho phim (Cần Auth)
@@ -723,7 +759,7 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - $ref: '#/components/parameters/MovieId'
+        - $ref: "#/components/parameters/MovieId"
       requestBody:
         required: true
         content:
@@ -737,7 +773,7 @@ paths:
                   minLength: 5
                   example: "Phim rất hay, kỹ xảo xuất sắc và cốt truyện bất ngờ!"
       responses:
-        '201':
+        "201":
           description: Gửi bình luận thành công
           content:
             application/json:
@@ -748,18 +784,26 @@ paths:
                   message:
                     type: string
                   data:
-                    $ref: '#/components/schemas/Review'
+                    $ref: "#/components/schemas/Review"
               example:
                 message: Tạo bài đánh giá thành công
-                data: {id: 1, userId: 1, movieId: 1, content: Phim rất hay, createdAt: '2026-10-24T00:00:00.000Z', user: {id: 1, username: testuser}}
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+                data:
+                  {
+                    id: 1,
+                    userId: 1,
+                    movieId: 1,
+                    content: Phim rất hay,
+                    createdAt: "2026-10-24T00:00:00.000Z",
+                    user: { id: 1, username: testuser },
+                  }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 
   /api/reviews/{id}:
     delete:
@@ -768,25 +812,25 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - $ref: '#/components/parameters/ReviewId'
+        - $ref: "#/components/parameters/ReviewId"
       responses:
-        '200':
+        "200":
           description: Đã xóa bài đánh giá.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MessageResponse'
-              example: {message: Xóa bài đánh giá thành công}
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+                $ref: "#/components/schemas/MessageResponse"
+              example: { message: Xóa bài đánh giá thành công }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 
   /api/watchlist:
     get:
@@ -796,7 +840,7 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '200':
+        "200":
           description: Danh sách phim trong Watchlist
           content:
             application/json:
@@ -807,14 +851,20 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/WatchlistItemWithMovie'
+                      $ref: "#/components/schemas/WatchlistItemWithMovie"
               example:
                 data:
-                  - {id: 1, userId: 1, movieId: 1, createdAt: '2026-10-24T00:00:00.000Z', movie: {id: 1, title: Inception, releaseYear: 2010}}
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+                  - {
+                      id: 1,
+                      userId: 1,
+                      movieId: 1,
+                      createdAt: "2026-10-24T00:00:00.000Z",
+                      movie: { id: 1, title: Inception, releaseYear: 2010 },
+                    }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
     post:
       tags: [Watchlist]
       summary: Thêm phim vào danh sách xem sau (Cần Auth)
@@ -834,7 +884,7 @@ paths:
                   maximum: 2147483647
                   example: 1
       responses:
-        '201':
+        "201":
           description: Đã thêm vào Watchlist
           content:
             application/json:
@@ -845,20 +895,26 @@ paths:
                   message:
                     type: string
                   data:
-                    $ref: '#/components/schemas/WatchlistItem'
+                    $ref: "#/components/schemas/WatchlistItem"
               example:
                 message: Đã thêm phim vào Watchlist
-                data: {id: 1, userId: 1, movieId: 1, createdAt: '2026-10-24T00:00:00.000Z'}
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '409':
-          $ref: '#/components/responses/Conflict'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+                data:
+                  {
+                    id: 1,
+                    userId: 1,
+                    movieId: 1,
+                    createdAt: "2026-10-24T00:00:00.000Z",
+                  }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 
   /api/watchlist/{movieId}:
     delete:
@@ -867,20 +923,20 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - $ref: '#/components/parameters/WatchlistMovieId'
+        - $ref: "#/components/parameters/WatchlistMovieId"
       responses:
-        '200':
+        "200":
           description: Xóa khỏi Watchlist thành công
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MessageResponse'
-              example: {message: Xóa phim khỏi Watchlist thành công}
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+                $ref: "#/components/schemas/MessageResponse"
+              example: { message: Xóa phim khỏi Watchlist thành công }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
