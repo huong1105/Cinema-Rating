@@ -1,24 +1,15 @@
 'use strict';
 
-const AppError = require('../utils/app-error');
-
 class ReviewRepository {
   constructor(prisma) {
     this.prisma = prisma;
   }
 
   async create({ content, userId, movieId }) {
-    try {
-      return await this.prisma.review.create({
-        data: { content, userId, movieId },
-        include: { user: { select: { id: true, username: true } } },
-      });
-    } catch (err) {
-      if (err.code === 'P2003') {
-        throw new AppError('Phim hoặc người dùng không còn tồn tại', 404);
-      }
-      throw err;
-    }
+    return await this.prisma.review.create({
+      data: { content, userId, movieId },
+      include: { user: { select: { id: true, username: true } } },
+    });
   }
 
   async findByMovieId(movieId) {

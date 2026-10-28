@@ -49,6 +49,12 @@ describe('RatingService', () => {
     expect(ratingRepository.upsert).not.toHaveBeenCalled();
   });
 
+  test.each(['P2003', 'P2025'])('maps repository database error %s to 404', async (code) => {
+    ratingRepository.upsert.mockRejectedValue({ code });
+    await expect(service.rateMovie({ movieId: 2, userId: 3, score: 8 }))
+      .rejects.toMatchObject({ statusCode: 404, message: 'Phim hoặc người dùng không còn tồn tại' });
+  });
+
   test('uses the same user/movie key when a user rates again', async () => {
     await service.rateMovie({ movieId: 2, userId: 3, score: 8 });
     await service.rateMovie({ movieId: 2, userId: 3, score: 9 });

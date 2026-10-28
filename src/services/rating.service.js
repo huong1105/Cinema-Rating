@@ -20,7 +20,14 @@ class RatingService {
       throw new AppError('Không tìm thấy phim', 404);
     }
 
-    return this.ratingRepository.upsert({ movieId, userId, score });
+    try {
+      return await this.ratingRepository.upsert({ movieId, userId, score });
+    } catch (err) {
+      if (err.code === 'P2003' || err.code === 'P2025') {
+        throw new AppError('Phim hoặc người dùng không còn tồn tại', 404);
+      }
+      throw err;
+    }
   }
 
   async getMovieSummary(movieId) {

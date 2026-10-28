@@ -36,9 +36,9 @@ async function request(method, route, body, token) {
 }
 
 beforeAll(async () => {
-  log = jest.spyOn(console, 'error').mockImplementation(() => {});
+  log = jest.spyOn(console, 'error').mockImplementation(() => { });
   execFileSync(process.execPath, [require.resolve('prisma/build/index.js'), 'migrate', 'deploy'], {
-    cwd: path.join(__dirname, '../..'), env: process.env, stdio: 'pipe', timeout: 30000,
+    cwd: path.join(__dirname, '../..'), env: { ...process.env, RUST_LOG: process.env.RUST_LOG || 'info', }, stdio: 'pipe', timeout: 30000,
   });
   await prisma.$connect();
   await new Promise((resolve) => {

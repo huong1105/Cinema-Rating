@@ -38,6 +38,18 @@ describe('WatchlistService', () => {
       .rejects.toMatchObject({ statusCode: 404 });
   });
 
+  test('maps repository duplicate race P2002 to 409', async () => {
+    watchlistRepository.create.mockRejectedValue({ code: 'P2002' });
+    await expect(service.addMovie({ movieId: 2, userId: 3 }))
+      .rejects.toMatchObject({ statusCode: 409, message: 'Phim đã có trong Watchlist' });
+  });
+
+  test('maps repository foreign key race P2003 to 404', async () => {
+    watchlistRepository.create.mockRejectedValue({ code: 'P2003' });
+    await expect(service.addMovie({ movieId: 2, userId: 3 }))
+      .rejects.toMatchObject({ statusCode: 404, message: 'Phim hoặc người dùng không còn tồn tại' });
+  });
+
   test('preserves a duplicate conflict reported by the repository', async () => {
     watchlistRepository.create.mockRejectedValue(new AppError('Duplicate', 409));
     await expect(service.addMovie({ movieId: 2, userId: 3 }))

@@ -1,7 +1,5 @@
 'use strict';
 
-const AppError = require('../utils/app-error');
-
 class WatchlistRepository {
   constructor(prisma) {
     this.prisma = prisma;
@@ -16,17 +14,7 @@ class WatchlistRepository {
   }
 
   async create({ userId, movieId }) {
-    try {
-      return await this.prisma.watchlist.create({ data: { userId, movieId } });
-    } catch (err) {
-      if (err.code === 'P2002') {
-        throw new AppError('Phim đã có trong Watchlist', 409);
-      }
-      if (err.code === 'P2003') {
-        throw new AppError('Phim hoặc người dùng không còn tồn tại', 404);
-      }
-      throw err;
-    }
+    return this.prisma.watchlist.create({ data: { userId, movieId } });
   }
 
   async deleteForUser(userId, movieId) {

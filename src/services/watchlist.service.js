@@ -25,7 +25,17 @@ class WatchlistService {
       throw new AppError('Không tìm thấy phim', 404);
     }
 
-    return this.watchlistRepository.create({ userId, movieId });
+    try {
+      return await this.watchlistRepository.create({ userId, movieId });
+    } catch (err) {
+      if (err.code === 'P2002') {
+        throw new AppError('Phim đã có trong Watchlist', 409);
+      }
+      if (err.code === 'P2003') {
+        throw new AppError('Phim hoặc người dùng không còn tồn tại', 404);
+      }
+      throw err;
+    }
   }
 
   async removeMovie(movieId, userId) {

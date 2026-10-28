@@ -38,6 +38,12 @@ describe('ReviewService', () => {
     await expect(service.getMovieReviews(2)).rejects.toMatchObject({ statusCode: 404 });
   });
 
+  test('maps repository foreign key race P2003 to 404', async () => {
+    reviewRepository.create.mockRejectedValue({ code: 'P2003' });
+    await expect(service.addReview({ movieId: 2, userId: 3, content: 'great' }))
+      .rejects.toMatchObject({ statusCode: 404, message: 'Phim hoặc người dùng không còn tồn tại' });
+  });
+
   test('returns an empty list for a movie with no reviews', async () => {
     await expect(service.getMovieReviews('2')).resolves.toEqual([]);
     expect(reviewRepository.findByMovieId).toHaveBeenCalledWith(2);

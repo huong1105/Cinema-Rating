@@ -20,7 +20,14 @@ class ReviewService {
       throw new AppError('Không tìm thấy phim', 404);
     }
 
-    return this.reviewRepository.create({ movieId, userId, content: content.trim() });
+    try {
+      return await this.reviewRepository.create({ movieId, userId, content: content.trim() });
+    } catch (err) {
+      if (err.code === 'P2003') {
+        throw new AppError('Phim hoặc người dùng không còn tồn tại', 404);
+      }
+      throw err;
+    }
   }
 
   async getMovieReviews(movieId) {
