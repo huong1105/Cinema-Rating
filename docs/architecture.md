@@ -101,7 +101,7 @@ Chi tiết request/response: [Swagger UI](http://localhost:3000/api-docs/) hoặ
 
 ## 6. Vấn đề kiến trúc và gợi ý cải tiến Pha 2
 
-Phân tích dựa trên benchmark baseline và cấu trúc hiện tại. Chỉ liệt kê các vấn đề ở tầng **kiến trúc** — liên quan đến thuộc tính chất lượng (performance, scalability), mô hình xử lý và tổ chức hệ thống.
+Phân tích dựa trên benchmark baseline và cấu trúc hiện tại.
 
 ### 6.1 Mất cân bằng đọc–ghi (Read-Write Asymmetry)
 
@@ -121,24 +121,9 @@ Chênh lệch **10–60 lần**. SQLite chỉ cho phép **một writer tại m�
 **CQRS (Command Query Responsibility Segregation):** Tách luồng đọc và ghi. Ví dụ: read request đi qua cache hoặc read replica, write request đi thẳng database. Kiến trúc phân tầng hiện tại đã tách rõ Service/Repository nên việc thêm CQRS ở tầng giữa không yêu cầu sửa lại toàn bộ.
 
 ![Sơ đồ CQRS tách đường đọc và ghi](./images/cqrs.svg)
+**Bật chế độ SQLite WAL mode (Write-Ahead Logging):** cho phép vừa đọc vừa ghi đồng thời mà không chặn nhau.
 
-**SQLite WAL mode:** Có thể cho phép reader tiếp tục đọc trong khi writer hoạt động, giảm một phần xung đột giữa đọc và ghi. WAL vẫn chỉ hỗ trợ một writer tại mỗi thời điểm, nên cần đo lại và không nên xem đây là cách tự giải quyết nghẽn giữa nhiều request ghi.
-
-### 6.2 Single-process — không sử dụng tài nguyên phần cứng
-
-Hiện tại `server.js` khởi chạy một Node.js process với một JavaScript Event Loop chính. Điều này giới hạn khả năng chạy song song phần JavaScript CPU-bound trong ứng dụng. Benchmark chưa đo mức sử dụng CPU từng core, nên chưa đủ căn cứ kết luận chính xác rằng 75% CPU bị bỏ phí.
-
-Đây là vấn đề về **deployment architecture** — cách hệ thống được triển khai để khai thác phần cứng.
-
-**Gợi ý kiến trúc:**
-
-**Cluster pattern:** Dùng Node.js Cluster module hoặc PM2 để chạy nhiều worker process. Mỗi worker là một bản sao đầy đủ của ứng dụng, chia tải ở tầng OS; lợi ích thực tế cần được đo trên cùng workload.
-
-![Sơ đồ cluster với bốn worker dùng chung SQLite](./images/cluster.svg)
-
-Lưu ý với SQLite: nhiều process ghi đồng thời có thể **tăng lock contention**; WAL không biến SQLite thành database nhiều writer. Cluster phù hợp hơn với workload chủ yếu là đọc và cần được benchmark sau khi triển khai.
-
-### 6.3 Không có tầng cache trong kiến trúc
+### 6.2 Không có tầng cache trong kiến trúc
 
 Kiến trúc hiện tại gồm 3 tầng: Controller → Service → Repository. Mỗi request dù đọc dữ liệu giống hệt nhau đều đi trọn vẹn 3 tầng rồi truy vấn DB.
 
@@ -152,12 +137,6 @@ Thêm **Cache Layer** giữa Service và Repository, giữ nguyên contract inte
 
 - Dữ liệu phù hợp cache: genres (gần như static), danh sách phim, rating summary.
 - Cần chiến lược **cache invalidation** khi có write: write-through hoặc invalidate-on-write.
-
-### Tổng hợp
-
-![So sánh kiến trúc hiện tại và các hướng cải tiến](./images/phase-comparison.svg)
-
-Ba cải tiến này độc lập, có thể áp dụng riêng lẻ và đo tác động từng cái. Khi đánh giá Pha 2, chạy cùng load test script, cùng cấu hình (connections, duration, seed data), cùng Kaggle CPU — so sánh RPS, latency và số lỗi trước/sau.
 
 ---
 
