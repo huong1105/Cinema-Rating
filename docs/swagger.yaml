@@ -30,23 +30,86 @@ components:
       bearerFormat: JWT
 
   schemas:
-    Movie:
+    Genre:
       type: object
+      required: [id, name]
       properties:
         id:
           type: integer
+          example: 1
+        name:
+          type: string
+          example: Action
+
+    MovieGenreRelation:
+      type: object
+      required: [id, movieId, genreId, genre]
+      properties:
+        id:
+          type: integer
+          example: 2
+        movieId:
+          type: integer
+          example: 1
+        genreId:
+          type: integer
+          example: 1
+        genre:
+          $ref: '#/components/schemas/Genre'
+
+    Movie:
+      type: object
+      required: [id, title]
+      properties:
+        id:
+          type: integer
+          example: 1
         title:
           type: string
+          example: Inception
         overview:
           type: string
+          nullable: true
+          example: A thief who steals corporate secrets through dream-sharing technology.
         director:
           type: string
+          nullable: true
+          example: Christopher Nolan
         releaseYear:
           type: integer
+          nullable: true
+          example: 2010
+        createdAt:
+          type: string
+          format: date-time
+          example: '2026-10-27T10:23:27.904Z'
         genres:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/MovieGenreRelation'
+
+    CreateMovieInput:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+          example: Interstellar
+        overview:
+          type: string
+          example: Explorers travel through a wormhole in space to ensure humanity's survival.
+        director:
+          type: string
+          example: Christopher Nolan
+        releaseYear:
+          type: integer
+          minimum: 1888
+          example: 2014
+        genreIds:
+          type: array
+          items:
+            type: integer
+          example: [10]
 
     ErrorResponse:
       type: object
@@ -333,13 +396,48 @@ paths:
   /api/movies:
     get:
       tags: [Movies]
-      summary: Lấy danh sách phim
+      summary: Lấy danh sách phim kèm thể loại
+      description: Trả về danh sách tất cả các bộ phim trong hệ thống kèm thể loại liên kết, sắp xếp theo ID tăng dần.
       responses:
         '200':
           description: Danh sách phim kèm thể loại
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Movie'
+              example:
+                data:
+                  - id: 1
+                    title: Inception
+                    overview: A thief who steals corporate secrets through dream-sharing technology.
+                    director: Christopher Nolan
+                    releaseYear: 2010
+                    createdAt: '2026-10-27T10:23:27.904Z'
+                    genres:
+                      - id: 2
+                        movieId: 1
+                        genreId: 1
+                        genre:
+                          id: 1
+                          name: Action
+                      - id: 1
+                        movieId: 1
+                        genreId: 10
+                        genre:
+                          id: 10
+                          name: Science Fiction
+        '500':
+          $ref: '#/components/responses/InternalServerError'
     post:
       tags: [Movies]
       summary: Thêm phim mới (Cần Auth)
+      description: Tạo mới một bộ phim trong hệ thống. Cần đăng nhập (Bearer token). Hỗ trợ liên kết danh sách thể loại qua mảng genreIds.
       security:
         - BearerAuth: []
       requestBody:
@@ -347,60 +445,143 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required: [title]
-              properties:
-                title:
-                  type: string
-                overview:
-                  type: string
-                director:
-                  type: string
-                releaseYear:
-                  type: integer
-                genreIds:
-                  type: array
-                  items:
-                    type: integer
+              $ref: '#/components/schemas/CreateMovieInput'
+            example:
+              title: Interstellar
+              overview: Explorers travel through a wormhole in space to ensure humanity's survival.
+              director: Christopher Nolan
+              releaseYear: 2014
+              genreIds: [10]
       responses:
         '201':
           description: Tạo phim thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [message, data]
+                properties:
+                  message:
+                    type: string
+                    example: Tạo phim thành công
+                  data:
+                    $ref: '#/components/schemas/Movie'
+              example:
+                message: Tạo phim thành công
+                data:
+                  id: 2
+                  title: Interstellar
+                  overview: Explorers travel through a wormhole in space to ensure humanity's survival.
+                  director: Christopher Nolan
+                  releaseYear: 2014
+                  createdAt: '2026-10-27T10:23:27.905Z'
+                  genres:
+                    - id: 3
+                      movieId: 2
+                      genreId: 10
+                      genre:
+                        id: 10
+                        name: Science Fiction
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
   /api/movies/{id}:
     get:
       tags: [Movies]
       summary: Xem chi tiết phim
+      description: Lấy thông tin chi tiết của một bộ phim theo ID kèm danh sách thể loại liên kết.
       parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: integer
+        - $ref: '#/components/parameters/MovieId'
       responses:
         '200':
           description: Chi tiết phim
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Movie'
+              example:
+                data:
+                  id: 1
+                  title: Inception
+                  overview: A thief who steals corporate secrets through dream-sharing technology.
+                  director: Christopher Nolan
+                  releaseYear: 2010
+                  createdAt: '2026-10-27T10:23:27.904Z'
+                  genres:
+                    - id: 2
+                      movieId: 1
+                      genreId: 1
+                      genre:
+                        id: 1
+                        name: Action
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
     delete:
       tags: [Movies]
       summary: Xóa phim (Cần Auth)
+      description: Xóa một bộ phim theo ID khỏi hệ thống. Tự động xóa tầng (Cascade) các ratings, reviews, watchlist liên quan. Cần quyền đăng nhập (Bearer token).
       security:
         - BearerAuth: []
       parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: integer
+        - $ref: '#/components/parameters/MovieId'
       responses:
         '200':
           description: Xóa phim thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              example:
+                message: Xóa phim thành công
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
   /api/genres:
     get:
       tags: [Genres]
       summary: Lấy danh sách thể loại phim
+      description: Trả về danh sách tất cả các thể loại phim có trong hệ thống, sắp xếp theo ID tăng dần.
       responses:
         '200':
           description: Danh sách thể loại
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Genre'
+              example:
+                data:
+                  - id: 1
+                    name: Action
+                  - id: 2
+                    name: Adventure
+                  - id: 10
+                    name: Science Fiction
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
   /api/movies/{id}/ratings:
     post:

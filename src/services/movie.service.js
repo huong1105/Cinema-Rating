@@ -26,14 +26,14 @@ class MovieService {
     return movie;
   }
 
-  async createMovie(data) {
+  async createMovie(data = {}) {
     const {
       title,
       overview,
       director,
       releaseYear,
       genreIds = [],
-    } = data;
+    } = data || {};
 
     if (typeof title !== 'string' || !title.trim()) {
       throw new AppError('Tên phim không được để trống', 400);
@@ -89,7 +89,14 @@ class MovieService {
       throw new AppError('Không tìm thấy phim', 404);
     }
 
-    await this.movieRepository.delete(id);
+    try {
+      await this.movieRepository.delete(id);
+    } catch (err) {
+      if (err.code === 'P2025') {
+        throw new AppError('Không tìm thấy phim', 404);
+      }
+      throw err;
+    }
 
     return { message: 'Xóa phim thành công' };
   }
