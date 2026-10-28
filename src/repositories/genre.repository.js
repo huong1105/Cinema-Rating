@@ -16,6 +16,12 @@ class GenreRepository {
             where: { id: { in: ids } },
         });
     }
+
+    async findById(id) {
+        return this.prisma.genre.findUnique({
+            where: { id },
+        });
+    }
 }
 
 module.exports = GenreRepository;

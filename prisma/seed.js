@@ -36,6 +36,13 @@ async function main() {
 
   const action = await prisma.genre.findUnique({ where: { name: 'Action' } });
   const scifi = await prisma.genre.findUnique({ where: { name: 'Science Fiction' } });
+  const adventure = await prisma.genre.findUnique({ where: { name: 'Adventure' } });
+  const drama = await prisma.genre.findUnique({ where: { name: 'Drama' } });
+  const crime = await prisma.genre.findUnique({ where: { name: 'Crime' } });
+  const animation = await prisma.genre.findUnique({ where: { name: 'Animation' } });
+  const fantasy = await prisma.genre.findUnique({ where: { name: 'Fantasy' } });
+  const thriller = await prisma.genre.findUnique({ where: { name: 'Thriller' } });
+  const comedy = await prisma.genre.findUnique({ where: { name: 'Comedy' } });
 
   const movie1 = await prisma.movie.upsert({
     where: { id: 1 },
@@ -69,7 +76,61 @@ async function main() {
       },
     },
   });
-  console.log('  ✔ 2 phim mẫu: Inception, Interstellar');
+
+  const movie3 = await prisma.movie.upsert({
+    where: { id: 3 },
+    update: {},
+    create: {
+      title: 'The Dark Knight',
+      overview: 'When the menace known as the Joker wreaks havoc on Gotham, Batman must face his greatest psychological and physical test.',
+      director: 'Christopher Nolan',
+      releaseYear: 2008,
+      genres: {
+        create: [
+          { genre: { connect: { id: action.id } } },
+          { genre: { connect: { id: crime.id } } },
+          { genre: { connect: { id: drama.id } } },
+        ],
+      },
+    },
+  });
+
+  const movie4 = await prisma.movie.upsert({
+    where: { id: 4 },
+    update: {},
+    create: {
+      title: 'Spirited Away',
+      overview: 'A 10-year-old girl wanders into a world ruled by gods, witches, and spirits, and must find a way to free her parents.',
+      director: 'Hayao Miyazaki',
+      releaseYear: 2001,
+      genres: {
+        create: [
+          { genre: { connect: { id: animation.id } } },
+          { genre: { connect: { id: adventure.id } } },
+          { genre: { connect: { id: fantasy.id } } },
+        ],
+      },
+    },
+  });
+
+  const movie5 = await prisma.movie.upsert({
+    where: { id: 5 },
+    update: {},
+    create: {
+      title: 'Parasite',
+      overview: 'Greed and class discrimination threaten the newly formed symbiotic relationship between the wealthy Park family and the destitute Kim clan.',
+      director: 'Bong Joon-ho',
+      releaseYear: 2019,
+      genres: {
+        create: [
+          { genre: { connect: { id: drama.id } } },
+          { genre: { connect: { id: thriller.id } } },
+          { genre: { connect: { id: comedy.id } } },
+        ],
+      },
+    },
+  });
+  console.log('  ✔ 5 phim mẫu: Inception, Interstellar, The Dark Knight, Spirited Away, Parasite');
 
   await prisma.rating.upsert({
     where: { userId_movieId: { userId: user.id, movieId: movie1.id } },
@@ -82,13 +143,18 @@ async function main() {
   });
   console.log('  ✔ Rating mẫu (9.5/10 cho Inception)');
 
-  await prisma.review.create({
-    data: {
-      content: 'Phim cực kỳ xuất sắc, kịch bản đa tầng và kỹ xảo tuyệt đỉnh!',
-      userId: user.id,
-      movieId: movie1.id,
-    },
+  const existingReview = await prisma.review.findFirst({
+    where: { userId: user.id, movieId: movie1.id },
   });
+  if (!existingReview) {
+    await prisma.review.create({
+      data: {
+        content: 'Phim cực kỳ xuất sắc, kịch bản đa tầng và kỹ xảo tuyệt đỉnh!',
+        userId: user.id,
+        movieId: movie1.id,
+      },
+    });
+  }
   console.log('  ✔ Review mẫu cho Inception');
 
   await prisma.watchlist.upsert({
