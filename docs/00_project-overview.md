@@ -1,6 +1,6 @@
 # CineRate — Tổng quan dự án
 
-CineRate là backend REST API cho nền tảng cộng đồng đánh giá phim. Pha 1 triển khai nghiệp vụ cốt lõi, thiết lập kiến trúc nền tảng và ghi nhận baseline hiệu năng để nhóm có thể so sánh các cải tiến tiếp theo.
+CineRate là backend REST API cho nền tảng cộng đồng đánh giá phim. Pha 1 triển khai nghiệp vụ cốt lõi, thiết lập kiến trúc nền tảng và ghi nhận baseline hiệu năng để các nhóm khác có thể so sánh các cải tiến tiếp theo.
 
 ## Chức năng
 

@@ -35,7 +35,7 @@ docker compose down
 
 Service có tên `cinerate-api` và restart policy `unless-stopped`. Compose ánh xạ cổng máy host từ PORT (mặc định 3000) tới cổng 3000 trong container. Để đổi cổng host, đặt `PORT=3001` trong .env rồi truy cập http://localhost:3001.
 
-## Database và dữ liệu bền vững
+## Database 
 
 Compose cấu hình `DATABASE_URL=file:/app/data/prod.db` và mount named volume `sqlite-data` vào `/app/data`. Database được giữ lại khi container dừng hoặc được tạo lại.
 
@@ -56,7 +56,7 @@ sh -c "./node_modules/.bin/prisma migrate deploy && node src/server.js"
 | `DATABASE_URL` | `file:./dev.db` trong .env.example | `file:/app/data/prod.db` | Database SQLite |
 | `JWT_SECRET` | Placeholder trong .env.example | Bắt buộc đặt trước khi chạy | Nếu chạy trực tiếp mà thiếu biến, mã auth có fallback `cinerate-secret-key` |
 | `JWT_EXPIRES_IN` | `7d` | `7d` | Thời hạn JWT |
-| `BCRYPT_SALT_ROUNDS` | `10` | Compose truyền `10` | AuthService hiện dùng cố định 10 rounds; biến này chưa điều khiển cấu hình bcrypt |
+
 
 Không đưa .env hoặc secret thật vào image hay repository.
 

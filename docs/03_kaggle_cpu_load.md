@@ -37,7 +37,7 @@ Tổng cộng benchmark ghi nhận **99,478 request trong 193 giây**, tương �
 
 - GET đạt khoảng 526–2.094 RPS với latency trung bình dưới 20 ms.
 - Các thao tác ghi đạt 10–76 RPS; p99 của nhiều thao tác ghi lên khoảng 1–2 giây.
-- Auth (register/login) có độ trễ cao nhất, khoảng 10 RPS. Bcrypt cần được profiling thêm; các số liệu này chưa tự chứng minh Event Loop bị chặn.
+- Auth (register/login) có độ trễ cao nhất, khoảng 10 RPS. Bcrypt nên được profiling thêm; các số liệu này chưa tự chứng minh Event Loop bị chặn.
 - Mức chênh lệch đọc–ghi khoảng 10–60 lần. Kết quả phù hợp với giả thuyết SQLite lock contention, nhưng benchmark này chưa xác nhận đó là nguyên nhân duy nhất.
 - Đây là baseline để so sánh trước và sau cải tiến Pha 2 trên cùng phần cứng và cấu hình.
 
@@ -89,8 +89,6 @@ os.environ["LOAD_TEST_USERNAME"] = "testuser"
 os.environ["LOAD_TEST_PASSWORD"] = getpass.getpass("Nhập mật khẩu test: ")
 ~~~
 
-Ở chế độ `LOAD_TEST_MODE=all`, benchmark dùng mật khẩu này cho các tài khoản fixture tạm thời do script tạo; script không đăng nhập bằng `LOAD_TEST_USERNAME`. Biến username được đặt để tương thích với chế độ baseline.
-
 ### Cell 3 — Tạo database riêng, khởi chạy API và đo tải
 
 ~~~bash
@@ -127,5 +125,3 @@ export LOAD_TEST_DURATION='10'
 export LOAD_TEST_CONNECTIONS='10'
 npm run test:load
 ~~~
-
-Chế độ `all` đo riêng từng endpoint trong danh sách benchmark. Script tạo và dọn dữ liệu fixture cho các thao tác ghi, đồng thời báo lỗi nếu request thất bại hoặc endpoint không nhận được request. Kết quả môi trường, số request, RPS, độ trễ và status code được in thành JSON ở output của cell.

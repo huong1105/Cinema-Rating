@@ -6,7 +6,6 @@ API local mặc định chạy tại http://localhost:3000.
 
 - Swagger UI được cấu hình tại http://localhost:3000/api-docs/.
 - Đặc tả OpenAPI 3.0.3 nằm trong [swagger.yaml](./swagger.yaml).
-- Mức độ chi tiết request/response trong đặc tả hiện chưa đồng đều giữa các endpoint.
 - Nếu Swagger UI không hiển thị, xem log khởi động và kiểm tra YAML. Ứng dụng sẽ tắt route /api-docs nếu không tải được đặc tả.
 
 Có thể mở `swagger.yaml` trong một OpenAPI editor, hoặc import vào [Swagger Editor](https://editor.swagger.io/) để xem đặc tả.
