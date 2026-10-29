@@ -30,12 +30,8 @@ components:
       bearerFormat: JWT
 
   schemas:
-<<<<<<< Updated upstream
     Genre:
-=======
-    Movie:
-      description: DTO chi tiết phim kèm thể loại (API Data Transfer Object)
->>>>>>> Stashed changes
+      description: DTO thông tin thể loại phim
       type: object
       required: [id, name]
       properties:
@@ -63,6 +59,7 @@ components:
           $ref: '#/components/schemas/Genre'
 
     Movie:
+      description: DTO chi tiết phim kèm thể loại (API Data Transfer Object)
       type: object
       required: [id, title]
       properties:
