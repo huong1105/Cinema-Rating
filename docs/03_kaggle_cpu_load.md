@@ -63,3 +63,69 @@ Với workload đọc nhiều ghi ít, cache giữa service và repository có t
 ![Sơ đồ cache giữa service và repository](./images/cache-layer.svg)
 
 Dữ liệu phù hợp để khảo sát cache gồm genres, danh sách phim và rating summary. Sau thao tác ghi cần chính sách invalidation như write-through hoặc invalidate-on-write.
+
+
+## Kaggle CPU Notebook
+
+Các cell bên dưới tạo một database riêng cho mỗi lần chạy, khởi tạo schema và dữ liệu mẫu, khởi chạy API cục bộ trong Kaggle rồi chạy tất cả endpoint benchmark.
+
+Trước khi chạy, bật **Internet** trong phần Notebook options của Kaggle và push phiên bản backend cần đo lên GitHub. Chạy lần lượt ba cell sau.
+
+### Cell 1 — Clone repository và kiểm tra Node.js
+
+~~~python
+!git clone --depth 1 https://github.com/huong1105/Cinema-Rating.git /kaggle/working/Cinema-Rating
+!node --version
+!npm --version
+~~~
+
+### Cell 2 — Cấu hình tài khoản benchmark
+
+~~~python
+import getpass
+import os
+
+os.environ["LOAD_TEST_USERNAME"] = "testuser"
+os.environ["LOAD_TEST_PASSWORD"] = getpass.getpass("Nhập mật khẩu test: ")
+~~~
+
+Ở chế độ `LOAD_TEST_MODE=all`, benchmark dùng mật khẩu này cho các tài khoản fixture tạm thời do script tạo; script không đăng nhập bằng `LOAD_TEST_USERNAME`. Biến username được đặt để tương thích với chế độ baseline.
+
+### Cell 3 — Tạo database riêng, khởi chạy API và đo tải
+
+~~~bash
+%%bash
+set -euo pipefail
+cd /kaggle/working/Cinema-Rating
+node --version
+npm ci
+export BENCH_RUN_ID="$(date +%s)-$$"
+export DATABASE_PATH="/kaggle/working/cinerate-phase1-${BENCH_RUN_ID}.db"
+export DATABASE_URL="file:${DATABASE_PATH}"
+export NODE_ENV=production
+export PORT=3000
+export JWT_SECRET="$(node -e 'console.log(require("crypto").randomBytes(32).toString("hex"))')"
+test ! -e "$DATABASE_PATH" || {
+  echo 'Database benchmark đã tồn tại. Chạy lại cell để tạo tên database mới.'
+  exit 1
+}
+npm run db:generate
+npx --no-install prisma migrate deploy
+npm run db:seed
+node src/server.js > "/kaggle/working/cinerate-server-${BENCH_RUN_ID}.log" 2>&1 &
+task_server_pid=$!
+trap 'kill "$task_server_pid" 2>/dev/null || true' EXIT
+for task_attempt in $(seq 1 30); do
+  if node -e "fetch('http://127.0.0.1:3000/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"; then
+    break
+  fi
+  sleep 1
+done
+export BASE_URL='http://127.0.0.1:3000'
+export LOAD_TEST_MODE='all'
+export LOAD_TEST_DURATION='10'
+export LOAD_TEST_CONNECTIONS='10'
+npm run test:load
+~~~
+
+Chế độ `all` đo riêng từng endpoint trong danh sách benchmark. Script tạo và dọn dữ liệu fixture cho các thao tác ghi, đồng thời báo lỗi nếu request thất bại hoặc endpoint không nhận được request. Kết quả môi trường, số request, RPS, độ trễ và status code được in thành JSON ở output của cell.

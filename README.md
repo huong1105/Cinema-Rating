@@ -84,3 +84,7 @@ Giao diện tài liệu Swagger UI tại: **`http://localhost:3000/api-docs/`**.
 > - **Password:** `123456`
 
 ---
+
+## Kiểm thử tải trên Kaggle CPU
+
+Xem [báo cáo kiểm thử tải](./docs/03_kaggle_cpu_load.md) và [các cell notebook Kaggle](./docs/03_kaggle_cpu_load.md#kaggle-cpu-notebook). Notebook chạy trên Kaggle CPU; bật Internet và push code backend lên GitHub trước khi chạy.
