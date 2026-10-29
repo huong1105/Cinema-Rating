@@ -18,4 +18,4 @@ COPY src ./src
 COPY docs ./docs
 RUN mkdir -p /app/data
 EXPOSE 3000
-CMD ["sh", "-c", "./node_modules/.bin/prisma migrate deploy && node src/server.js"]
+CMD ["sh", "-c", "./node_modules/.bin/prisma migrate deploy && node prisma/seed.js && node src/server.js"]
