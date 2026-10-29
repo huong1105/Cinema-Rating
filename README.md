@@ -1,55 +1,86 @@
-# CineRate API — Tài liệu bàn giao Phase 1
+# CineRate API
 
-CineRate là REST API cho nền tảng đánh giá phim cộng đồng. Phase 1 xây dựng các nghiệp vụ nền tảng, ghi nhận baseline hiệu năng và chuẩn bị cấu trúc để nhóm Phase 2 tiếp tục cải tiến. README này tóm tắt dự án; chi tiết kiến trúc và benchmark nằm trong [docs/architecture.md](./docs/architecture.md).
+## TL;DR
 
-## Bài toán và nghiệp vụ
+Ứng dụng backend REST API hỗ trợ quản lý, đánh giá và tìm kiếm phim. Người dùng tra cứu danh mục phim theo thể loại, xem thông tin chi tiết, chấm điểm định lượng (1–10 sao), viết bài nhận xét cảm nhận và lưu trữ danh sách xem sau (Watchlist) cho riêng mình.
 
-Người dùng có thể đăng ký, đăng nhập và quản lý hồ sơ; tra cứu phim và thể loại; chấm điểm phim từ 1 đến 10; viết nhận xét; lưu phim vào watchlist cá nhân. Mỗi người dùng có một rating và một mục watchlist cho mỗi phim. Người dùng có thể cập nhật rating, còn review chỉ được xóa bởi tác giả. Người dùng đã đăng nhập có thể thêm hoặc xóa phim.
+Backend sử dụng **Node.js (v20+), Express 4, Prisma ORM, SQLite, JWT và Docker**.
 
-## Kiến trúc và tổ chức mã nguồn
+![Sơ đồ kiến trúc phân tầng của CineRate](./docs/images/architecture-layers.svg)
 
-![Sơ đồ kiến trúc phân tầng](./docs/images/architecture-layers.svg)
+---
 
-Ứng dụng dùng kiến trúc ba tầng và dependency injection thủ công tại [src/container.js](./src/container.js). Routes, controllers và middleware tiếp nhận HTTP; services xử lý nghiệp vụ; repositories truy cập SQLite qua Prisma.
+## Chức năng chính
 
-- `src/` — routes, controllers, services, repositories, middleware và cấu hình Express.
-- `prisma/` — schema bảy bảng, migrations và dữ liệu mẫu.
-- `tests/` — unit tests, integration tests và script đo tải.
-- `docs/` — tài liệu kiến trúc, sơ đồ và đặc tả OpenAPI.
+- **Tài khoản & Xác thực:** Đăng ký, mã hóa mật khẩu an toàn bằng `bcryptjs`, đăng nhập cấp mã JSON Web Token (JWT) không trạng thái (stateless), xem và cập nhật thông tin hồ sơ cá nhân (`profile`).
+- **Phim & Thể loại:** Tra cứu danh mục phim và thể loại; xem chi tiết từng bộ phim; thêm phim mới có kiểm duyệt nghiệp vụ (năm phát hành 1888 đến hiện tại + 10 năm, thể loại hợp lệ); xóa phim an toàn.
+- **Chấm điểm:** Chấm hoặc sửa điểm phim thang điểm từ 1.0 đến 10.0; mỗi người dùng chỉ chấm đúng 1 điểm cho 1 phim; tính điểm trung bình cộng và tổng số lượt đánh giá; xem lại lịch sử chấm điểm.
+- **Nhận xét & Bình luận:** Viết bài cảm nhận dạng văn bản; đọc bình luận của cộng đồng; cơ chế phân quyền nghiêm ngặt đảm bảo chỉ tác giả bài viết mới có quyền xóa nhận xét của mình.
+- **Danh sách xem sau:** Thêm các bộ phim yêu thích vào danh sách xem sau cá nhân; tự động chặn lưu trùng lặp nhờ ràng buộc cơ sở dữ liệu; gỡ phim khỏi danh sách khi đã xem xong.
+- **Kiến trúc phân tầng & Bảo mật:** Áp dụng mô hình **3-Layer Architecture** kết hợp Dependency Injection thủ công; bảo vệ endpoint qua Middleware xác thực JWT tập trung tại tầng Route.
 
-## Công nghệ
+---
 
-Node.js 20.19+, Express 4, Prisma 6, SQLite, JWT, bcryptjs và Docker Compose. Jest dùng cho unit/integration tests; Autocannon dùng cho đo tải.
+## Luồng sử dụng (User Flow)
 
-## Chạy dự án
+1. **Đăng ký và đăng nhập:** Người dùng tạo tài khoản mới hoặc đăng nhập bằng tài khoản mẫu có sẵn (`testuser / 123456`) để nhận chuỗi `Bearer Token`.
+2. **Khám phá kho phim:** Xem danh sách toàn bộ các bộ phim công khai kèm thể loại (`GET /api/movies`), lọc theo thể loại (`GET /api/genres`), xem chi tiết nội dung, đạo diễn và năm phát hành (`GET /api/movies/:id`).
+3. **Chấm điểm & Bình luận:** Đăng nhập để cho điểm phim từ 1–10 (`POST /api/movies/:id/ratings`), xem điểm trung bình cộng đồng (`GET /api/movies/:id/ratings/summary`) và viết bài cảm nhận nhận xét (`POST /api/movies/:id/reviews`).
+4. **Lưu danh sách xem sau (Watchlist):** Thêm phim muốn xem vào danh sách cá nhân (`POST /api/watchlist`), xem lại danh sách (`GET /api/watchlist`) và bỏ phim khỏi danh sách khi đã xem xong.
+5. **Quản trị phim:** Người dùng đã xác thực có thể thêm phim mới vào hệ sinh thái kèm kiểm tra chặt chẽ hoặc xóa phim lỗi thời (dữ liệu đánh giá liên quan sẽ được tự động dọn sạch).
 
-Cần Node.js 20.19+ và npm, hoặc Docker Compose. Khi chạy local:
+---
 
-~~~bash
-npm ci
+## Chạy nhanh (Quick Start)
+
+### Yêu cầu môi trường
+- **Cách 1:** Cần [Docker](https://www.docker.com/) và Docker Compose.
+- **Cách 2 :** Yêu cầu **Node.js ≥ 20** và npm.
+
+---
+
+### Cách 1: Chạy bằng Docker Compose
+
+```bash
+# 1. Sao chép biến môi trường
 cp .env.example .env
-# Đặt JWT_SECRET thành giá trị riêng, đủ ngẫu nhiên
+
+# 2. Khởi động ứng dụng cùng database trong container
+docker compose up --build -d
+
+# 3. Theo dõi log hoạt động
+docker compose logs -f cinerate-api
+```
+> Dừng hệ thống khi kết thúc: `docker compose down` (thêm `-v` nếu muốn xóa trắng dữ liệu database).
+
+---
+
+### Cách 2: Chạy trực tiếp trên máy cục bộ
+
+```bash
+# 1. Cài đặt các thư viện phụ thuộc
+npm ci
+
+# 2. Thiết lập cấu hình môi trường
+cp .env.example .env
+
+# 3. Khởi tạo Prisma Client và chạy migration database
 npm run db:generate
 npm run db:migrate
+
+# 4. Nạp sẵn dữ liệu mẫu (Seed 11 thể loại, 5 phim kinh điển và user mẫu)
 npm run db:seed
-npm run dev
-~~~
 
-API chạy tại `http://localhost:3000`. Giao diện Swagger UI tại `http://localhost:3000/api-docs/`. Với Docker Compose, đặt `JWT_SECRET` trong `.env` rồi chạy:
+# 5. Khởi động server
+npm start
+# hoặc chạy chế độ phát triển tự reload: npm run dev
+```
 
-~~~bash
-docker compose up --build -d
-~~~
+Server sẽ lắng nghe tại: **`http://localhost:3000`**.  
+Giao diện tài liệu Swagger UI tại: **`http://localhost:3000/api-docs/`**.
 
-SQLite được lưu trong named volume `sqlite-data` để tồn tại qua lần dừng hoặc thay container. Lệnh `docker compose down` giữ volume.
+> **Tài khoản kiểm thử mẫu đã seed sẵn:**
+> - **Username:** `testuser`
+> - **Password:** `123456`
 
-## API và baseline Phase 1
-
-Đặc tả 18 API endpoint cùng health check nằm tại [docs/swagger.yaml](./docs/swagger.yaml), định dạng OpenAPI 3.0.3. Có thể preview bằng Swagger UI sau khi khởi động ứng dụng.
-
-Benchmark trên Kaggle CPU (4 vCPU, 10 kết nối đồng thời, 10 giây mỗi endpoint) ghi nhận 99.478 request trong 193 giây, khoảng 515 request/giây gộp. GET đạt khoảng 526–2.094 RPS; các thao tác ghi đạt 10–76 RPS. Ba request timeout xuất hiện dưới tải ghi đồng thời. Auth có độ trễ cao nhất; bcrypt là một yếu tố cần profiling thêm, còn benchmark này chưa đủ để kết luận Event Loop bị chặn.
-
-Các điểm cần nhóm Phase 2 xem xét: SQLite chỉ cho phép một writer tại một thời điểm; dự án cũng chưa có cache hay tầng validation schema riêng.
-
-
-
+---
